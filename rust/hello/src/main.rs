@@ -1,6 +1,13 @@
-use std::io;
+use std::fs::{File, OpenOptions};
+use std::io::{self, Write};
 
-fn main() {
+use chrono::{DateTime, Local};
+
+fn valid_guess(guess: &str) -> bool {
+    guess.len() == 4
+}
+
+fn run_input_length() {
     println!("Guess the number!");
 
     println!("Please input your guess.");
@@ -30,6 +37,52 @@ fn main() {
     let _greeting = guess.contains("hello world");
 }
 
-fn valid_guess(guess: &str) -> bool {
-    guess.len() == 4
+fn run_create_file() {
+    match File::create("hello.txt") {
+        Ok(_val) => println!("File created!"),
+        Err(_err) => println!("Error: could not create file."),
+    }
+}
+
+fn run_format_time() {
+    let local: DateTime<Local> = Local::now();
+    let time_str = local.format("%Y-%m-%d %H:%M:%S").to_string();
+    println!("{}", time_str);
+}
+
+fn log_time(filename: &'static str) -> io::Result<()> {
+    let local: DateTime<Local> = Local::now();
+    let time_str = local.format("%a, %b %d %Y %I:%M:%S %p\n").to_string();
+    let mut f = File::create(filename)?;
+    f.write_all(time_str.as_bytes())?;
+    Ok(())
+}
+
+fn append_file(filename: &'static str, bytes: &[u8]) -> io::Result<()> {
+    let mut file = OpenOptions::new()
+        .append(true)
+        .create(true)
+        .open(filename)?;
+    file.write_all(bytes)?;
+    Ok(())
+}
+
+fn get_formatted_time() -> String {
+    let local: DateTime<Local> = Local::now();
+    let formatted = local.format("%a, %b %d %Y %I:%M:%S %p\n").to_string();
+    formatted
+}
+
+fn run_append_file() {
+    match append_file("log.txt", get_formatted_time().as_bytes()) {
+        Ok(_) => println!("File created or appended!"),
+        Err(_) => println!("Error: could not create file."),
+    }
+}
+
+fn main() {
+    // run_input_length();
+    // run_create_file();
+    // run_format_time();
+    run_append_file();
 }
