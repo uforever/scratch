@@ -2,20 +2,18 @@
 // 不使用标准库
 // println函数不再可以使用
 #![no_main]
+// 自定义测试框架
+#![feature(custom_test_frameworks)]
+#![test_runner(os::test_runner)]
+#![reexport_test_harness_main = "test_main"]
 
 // 引入VGA Buffer
-mod vga_buffer;
+// mod vga_buffer;
+use os::{print, println};
 
 // 出现两个Error
 // 需要panic_handler函数 和 一个语言项
 use core::panic::PanicInfo;
-
-// 发散函数 从不返回 用!表示Never类型
-#[panic_handler]
-fn panic(info: &PanicInfo) -> ! {
-    println!("{}", info);
-    loop {}
-}
 
 // Cargo.toml中禁用栈展开
 // 会产生一个新的报错 缺少start语言项
@@ -53,6 +51,9 @@ pub extern "C" fn _start() -> ! {
     println!("Hello World{}", "!");
     // panic!("Some panic message");
 
+    #[cfg(test)]
+    test_main();
+
     loop {}
 }
 
@@ -68,3 +69,26 @@ pub extern "C" fn _start() -> ! {
 // rustup override add nightly
 // cargo install bootimage
 // rustup component add llvm-tools-preview
+
+// 发散函数 从不返回 用!表示Never类型
+#[cfg(not(test))]
+#[panic_handler]
+fn panic(info: &PanicInfo) -> ! {
+    println!("{}", info);
+    loop {}
+}
+
+#[cfg(test)]
+#[panic_handler]
+fn panic(info: &PanicInfo) -> ! {
+    os::test_panic_handler(info)
+}
+
+#[test_case]
+fn trivial_assertion() {
+    // print!("trivial assertion... ");
+    // serial_print!("trivial assertion... ");
+    assert_eq!(1, 1);
+    // println!("[ok]");
+    // serial_println!("[ok]");
+}
