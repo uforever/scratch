@@ -3,13 +3,17 @@
 // println函数不再可以使用
 #![no_main]
 
+// 引入VGA Buffer
+mod vga_buffer;
+
 // 出现两个Error
 // 需要panic_handler函数 和 一个语言项
 use core::panic::PanicInfo;
 
 // 发散函数 从不返回 用!表示Never类型
 #[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
+fn panic(info: &PanicInfo) -> ! {
+    println!("{}", info);
     loop {}
 }
 
@@ -19,20 +23,35 @@ fn panic(_info: &PanicInfo) -> ! {
 // 如Java的GC Go的goroutine Rust中是crt0
 // 添加#![no_main]属性 不使用预定义的入口点
 
-static HELLO: &[u8] = b"Hello World!";
+// static HELLO: &[u8] = b"Hello World!";
 
 // 大多数系统使用_start()作为入口点名称
 // 也是发散函数 直接被bootloader调用
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    let vga_buffer = 0xb8000 as *mut u8;
+    // let vga_buffer = 0xb8000 as *mut u8;
 
-    for (i, &byte) in HELLO.iter().enumerate() {
-        unsafe {
-            *vga_buffer.offset(i as isize * 2) = byte;
-            *vga_buffer.offset(i as isize * 2 + 1) = 0xb;
-        }
-    }
+    // for (i, &byte) in HELLO.iter().enumerate() {
+    //     unsafe {
+    //         *vga_buffer.offset(i as isize * 2) = byte;
+    //         *vga_buffer.offset(i as isize * 2 + 1) = 0xa;
+    //     }
+    // }
+
+    // vga_buffer::print_something();
+
+    // use core::fmt::Write;
+    // vga_buffer::WRITER.lock().write_str("Hello again").unwrap();
+    // write!(
+    //     vga_buffer::WRITER.lock(),
+    //     ", some numbers: {} {}",
+    //     42,
+    //     1.337
+    // )
+    // .unwrap();
+
+    println!("Hello World{}", "!");
+    // panic!("Some panic message");
 
     loop {}
 }
